@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreeJS GameCraft AI - Build Your Dreams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0f;
+            color: #00ff9d;
+            overflow-x: hidden;
+        }
+        
+        .neon-border {
+            box-shadow: 0 0 10px #00ff9d, 0 0 20px #00ff9d;
+            border: 1px solid #00ff9d;
+        }
+        
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+        
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
+        
+        .cyberpunk-input {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #00ff9d;
+            color: #00ff9d;
+        }
+        
+        .cyberpunk-button:hover {
+            animation: neon 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes neon {
+            from { box-shadow: 0 0 10px #00ff9d, 0 0 20px #00ff9d; }
+            to { box-shadow: 0 0 20px #00ff9d, 0 0 30px #00ff9d; }
+        }
+        
+        #threeJsBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .content-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        
+        .game-card {
+            transition: all 0.3s ease;
+        }
+        
+        .game-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .platform-badge {
+            background: rgba(0,255,157,0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            border: 1px solid #00ff9d;
+        }
+        
+        .modal {
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #00ff9d;
+            color: #00ff9d;
+        }
+        
+        .game-preview-container {
+            border: 2px solid #00ff9d;
+            background: #0a0a0f;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-items {
+                display: none;
+            }
+            
+            .nav-items.active {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div id="threeJsBackground"></div>
+    
+    <div class="content-container">
+        <nav class="border-b border-[#00ff9d] p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-['Orbitron'] font-bold glitch">GameCraft AI</h1>
+                
+                <div class="hidden md:flex space-x-4">
+                    <button id="openLoginBtn" class="cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Login</button>
+                    <button id="openSignupBtn" class="cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Sign Up</button>
+                </div>
+                
+                <button class="block md:hidden cyberpunk-button px-3 py-1 border border-[#00ff9d]" id="mobileMenuBtn">
+                    <i class="bi bi-list text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="mobileMenu" class="hidden flex flex-col items-center space-y-4 py-4 md:hidden">
+                <button id="mobileLoginBtn" class="cyberpunk-button w-full px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Login</button>
+                <button id="mobileSignupBtn" class="cyberpunk-button w-full px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Sign Up</button>
+            </div>
+        </nav>
+
+        <main class="container mx-auto px-4 py-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-['Orbitron'] mb-4 glitch">Create Games with AI</h2>
+                <p class="text-xl">Turn your imagination into playable games instantly</p>
+                <div class="flex justify-center mt-4 space-x-2">
+                    <span class="platform-badge">iOS</span>
+                    <span class="platform-badge">Android</span>
+                    <span class="platform-badge">Web</span>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="neon-border p-6 rounded-lg">
+                    <h3 class="text-2xl font-['Orbitron'] mb-4">Game Creator</h3>
+                    <textarea id="gamePrompt" class="cyberpunk-input w-full h-32 p-4 rounded-lg mb-4" placeholder="Describe your game idea... (e.g., 'A space adventure where you collect stars to unlock new planets')"></textarea>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 mb-4">
+                        <select id="gameType" class="cyberpunk-input p-2 rounded-lg flex-1">
+                            <option value="" disabled selected>Select Game Type</option>
+                            <option value="puzzle">Puzzle</option>
+                            <option value="action">Action</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="rpg">RPG</option>
+                            <option value="strategy">Strategy</option>
+                            <option value="platformer">Platformer</option>
+                            <option value="education">Educational</option>
+                        </select>
+                        <select id="difficulty" class="cyberpunk-input p-2 rounded-lg flex-1">
+                            <option value="" disabled selected>Select Difficulty</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-lg mb-2">Target Age Group:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="ageGroup" value="5-8" class="hidden">
+                                <span class="px-3 py-1 border border-[#00ff9d] rounded-full hover:bg-[#00ff9d] hover:text-black transition age-option">5-8</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="ageGroup" value="9-12" class="hidden">
+                                <span class="px-3 py-1 border border-[#00ff9d] rounded-full hover:bg-[#00ff9d] hover:text-black transition age-option">9-12</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="ageGroup" value="13-17" class="hidden">
+                                <span class="px-3 py-1 border border-[#00ff9d] rounded-full hover:bg-[#00ff9d] hover:text-black transition age-option">13-17</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="ageGroup" value="18-25" class="hidden">
+                                <span class="px-3 py-1 border border-[#00ff9d] rounded-full hover:bg-[#00ff9d] hover:text-black transition age-option">18-25</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="ageGroup" value="all" class="hidden" checked>
+                                <span class="px-3 py-1 border border-[#00ff9d] rounded-full bg-[#00ff9d] text-black transition age-option">All ages</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button id="generateBtn" class="w-full cyberpunk-button px-6 py-3 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">
+                        <i class="bi bi-stars mr-2"></i>Generate Game
+                    </button>
+                </div>
+
+                <div id="previewArea" class="neon-border p-6 rounded-lg">
+                    <h3 class="text-2xl font-['Orbitron'] mb-4">Preview</h3>
+                    <div id="gamePreview" class="game-preview-container bg-black h-[300px] rounded-lg flex items-center justify-center">
+                        <div class="text-center p-4">
+                            <i class="bi bi-controller text-5xl mb-3"></i>
+                            <p>Your game preview will appear here</p>
+                            <p class="text-sm mt-3 opacity-70">Create something amazing!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <h3 class="text-2xl font-['Orbitron'] mb-6 text-center">How It Works</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="neon-border p-6 rounded-lg feature-card">
+                        <i class="bi bi-lightning-charge-fill text-4xl"></i>
+                        <h4 class="text-xl font-['Orbitron'] my-3">Instant Creation</h4>
+                        <p>Create games in minutes with AI-powered assistance. Simply describe your idea, and our AI builds it for you!</p>
+                    </div>
+                    <div class="neon-border p-6 rounded-lg feature-card">
+                        <i class="bi bi-phone text-4xl"></i>
+                        <h4 class="text-xl font-['Orbitron'] my-3">Cross-Platform</h4>
+                        <p>Play your games on any device, anywhere. iOS, Android, and web versions are all generated automatically.</p>
+                    </div>
+                    <div class="neon-border p-6 rounded-lg feature-card">
+                        <i class="bi bi-share-fill text-4xl"></i>
+                        <h4 class="text-xl font-['Orbitron'] my-3">Easy Sharing</h4>
+                        <p>Share your creations with friends instantly. Generate QR codes or links to let others play your games.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16">
+                <h3 class="text-2xl font-['Orbitron'] mb-6 text-center">Popular Creations</h3>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="rounded-lg game-card overflow-hidden">
+                        <div class="h-40 bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+                            <i class="bi bi-rocket-takeoff text-4xl"></i>
+                        </div>
+                        <div class="p-4 bg-black bg-opacity-80 border border-[#00ff9d]">
+                            <h4 class="font-['Orbitron']">Cosmic Explorer</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-xs mr-2">Puzzle</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">Age 5+</span>
+                            </div>
+                            <button class="mt-3 w-full text-xs py-1 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Try It</button>
+                        </div>
+                    </div>
+                    <div class="rounded-lg game-card overflow-hidden">
+                        <div class="h-40 bg-gradient-to-r from-green-500 to-yellow-500 flex items-center justify-center">
+                            <i class="bi bi-tree text-4xl"></i>
+                        </div>
+                        <div class="p-4 bg-black bg-opacity-80 border border-[#00ff9d]">
+                            <h4 class="font-['Orbitron']">Forest Adventure</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-xs mr-2">Platformer</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">Age 9+</span>
+                            </div>
+                            <button class="mt-3 w-full text-xs py-1 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Try It</button>
+                        </div>
+                    </div>
+                    <div class="rounded-lg game-card overflow-hidden">
+                        <div class="h-40 bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
+                            <i class="bi bi-fire text-4xl"></i>
+                        </div>
+                        <div class="p-4 bg-black bg-opacity-80 border border-[#00ff9d]">
+                            <h4 class="font-['Orbitron']">Ninja Warrior</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-xs mr-2">Action</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">Age 13+</span>
+                            </div>
+                            <button class="mt-3 w-full text-xs py-1 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Try It</button>
+                        </div>
+                    </div>
+                    <div class="rounded-lg game-card overflow-hidden">
+                        <div class="h-40 bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center">
+                            <i class="bi bi-mortarboard text-4xl"></i>
+                        </div>
+                        <div class="p-4 bg-black bg-opacity-80 border border-[#00ff9d]">
+                            <h4 class="font-['Orbitron']">Math Masters</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-xs mr-2">Educational</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">Age 7+</span>
+                            </div>
+                            <button class="mt-3 w-full text-xs py-1 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Try It</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-16 border-t border-[#00ff9d] py-8">
+            <div class="container mx-auto px-4">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-['Orbitron'] text-xl mb-4">GameCraft AI</h4>
+                        <p class="mb-4">Turning imagination into playable games for creators of all ages.</p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-xl hover:text-white transition"><i class="bi bi-twitter-x"></i></a>
+                            <a href="#" class="text-xl hover:text-white transition"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="text-xl hover:text-white transition"><i class="bi bi-youtube"></i></a>
+                            <a href="#" class="text-xl hover:text-white transition"><i class="bi bi-discord"></i></a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-['Orbitron'] text-xl mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="hover:text-white transition">Documentation</a></li>
+                            <li><a href="#" class="hover:text-white transition">Tutorials</a></li>
+                            <li><a href="#" class="hover:text-white transition">API Reference</a></li>
+                            <li><a href="#" class="hover:text-white transition">Community Forum</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-['Orbitron'] text-xl mb-4">Stay Updated</h4>
+                        <p class="mb-3">Get the latest GameCraft news and updates</p>
+                        <div class="flex">
+                            <input type="email" placeholder="Your email" class="cyberpunk-input p-2 rounded-l-lg flex-grow">
+                            <button class="bg-[#00ff9d] text-black px-4 rounded-r-lg hover:bg-opacity-80 transition">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-8 border-t border-[#00ff9d] text-center">
+                    <p>&copy; 2023 GameCraft AI. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="modal absolute inset-0"></div>
+        <div class="relative bg-[#0a0a0f] p-8 rounded-lg max-w-md w-full neon-border">
+            <button class="absolute top-4 right-4 text-2xl close-modal">&times;</button>
+            <h3 class="text-2xl font-['Orbitron'] mb-6 text-center">Login</h3>
+            <form class="space-y-4">
+                <div>
+                    <label class="block mb-1">Email or Username</label>
+                    <input type="text" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Enter your email or username">
+                </div>
+                <div>
+                    <label class="block mb-1">Password</label>
+                    <input type="password" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Enter your password">
+                </div>
+                <div class="flex justify-between items-center">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="mr-2">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm hover:text-white">Forgot password?</a>
+                </div>
+                <button type="button" class="w-full cyberpunk-button px-6 py-3 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Login</button>
+                <p class="text-center">Don't have an account? <a href="#" id="switchToSignup" class="text-[#00ff9d] hover:text-white">Sign up</a></p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Signup Modal -->
+    <div id="signupModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="modal absolute inset-0"></div>
+        <div class="relative bg-[#0a0a0f] p-8 rounded-lg max-w-md w-full neon-border">
+            <button class="absolute top-4 right-4 text-2xl close-modal">&times;</button>
+            <h3 class="text-2xl font-['Orbitron'] mb-6 text-center">Sign Up</h3>
+            <form class="space-y-4">
+                <div>
+                    <label class="block mb-1">Username</label>
+                    <input type="text" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Choose a username">
+                </div>
+                <div>
+                    <label class="block mb-1">Email</label>
+                    <input type="email" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Enter your email">
+                </div>
+                <div>
+                    <label class="block mb-1">Password</label>
+                    <input type="password" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Create a password">
+                </div>
+                <div>
+                    <label class="block mb-1">Confirm Password</label>
+                    <input type="password" class="cyberpunk-input w-full p-2 rounded-lg" placeholder="Confirm your password">
+                </div>
+                <div>
+                    <label class="block mb-1">Age Group</label>
+                    <select class="cyberpunk-input w-full p-2 rounded-lg">
+                        <option value="" selected disabled>Select your age group</option>
+                        <option value="5-8">5-8 years</option>
+                        <option value="9-12">9-12 years</option>
+                        <option value="13-17">13-17 years</option>
+                        <option value="18-25">18-25 years</option>
+                        <option value="above25">Above 25 years</option>
+                    </select>
+                </div>
+                <button type="button" class="w-full cyberpunk-button px-6 py-3 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Create Account</button>
+                <p class="text-center">Already have an account? <a href="#" id="switchToLogin" class="text-[#00ff9d] hover:text-white">Login</a></p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Game Preview Modal -->
+    <div id="gamePlayModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="modal absolute inset-0"></div>
+        <div class="relative bg-[#0a0a0f] p-8 rounded-lg max-w-4xl w-full neon-border">
+            <button class="absolute top-4 right-4 text-2xl close-modal">&times;</button>
+            <h3 id="modalGameTitle" class="text-2xl font-['Orbitron'] mb-6 text-center">Your Game</h3>
+            
+            <div class="flex mb-4 border-b border-[#00ff9d]">
+                <button class="tab-button tab-active px-4 py-2 mr-2" data-tab="play">Play</button>
+                <button class="tab-button px-4 py-2 mr-2" data-tab="customize">Customize</button>
+                <button class="tab-button px-4 py-2" data-tab="share">Share</button>
+            </div>
+            
+            <div class="tab-content" id="playTab">
+                <div id="gameCanvas" class="h-[400px] bg-black flex items-center justify-center rounded-lg mb-4">
+                    <div id="gameLoading" class="text-center">
+                        <div class="animate-spin text-4xl mb-4"><i class="bi bi-arrow-repeat"></i></div>
+                        <p>Loading your game...</p>
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                    <button class="cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-arrow-counterclockwise mr-2"></i>Restart</button>
+                    <button class="cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-download mr-2"></i>Download</button>
+                </div>
+            </div>
+            
+            <div class="tab-content hidden" id="customizeTab">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h4 class="font-['Orbitron'] mb-2">Game Settings</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block mb-1 text-sm">Game Speed</label>
+                                <input type="range" min="1" max="10" value="5" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm">Difficulty</label>
+                                <select class="cyberpunk-input w-full p-2 rounded-lg text-sm">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm">Theme</label>
+                                <select class="cyberpunk-input w-full p-2 rounded-lg text-sm">
+                                    <option value="cyber" selected>Cyberpunk</option>
+                                    <option value="fantasy">Fantasy</option>
+                                    <option value="space">Space</option>
+                                    <option value="cartoon">Cartoon</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-['Orbitron'] mb-2">Character Settings</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block mb-1 text-sm">Character Type</label>
+                                <select class="cyberpunk-input w-full p-2 rounded-lg text-sm">
+                                    <option value="robot" selected>Robot</option>
+                                    <option value="human">Human</option>
+                                    <option value="alien">Alien</option>
+                                    <option value="animal">Animal</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm">Color Scheme</label>
+                                <div class="flex space-x-2">
+                                    <button class="w-6 h-6 rounded-full bg-blue-500 border-2 border-white"></button>
+                                    <button class="w-6 h-6 rounded-full bg-green-500"></button>
+                                    <button class="w-6 h-6 rounded-full bg-purple-500"></button>
+                                    <button class="w-6 h-6 rounded-full bg-red-500"></button>
+                                    <button class="w-6 h-6 rounded-full bg-yellow-500"></button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm">Abilities</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 text-xs border border-[#00ff9d] rounded-full bg-[#00ff9d] text-black">Jump</span>
+                                    <span class="px-2 py-1 text-xs border border-[#00ff9d] rounded-full">Fly</span>
+                                    <span class="px-2 py-1 text-xs border border-[#00ff9d] rounded-full">Shoot</span>
+                                    <span class="px-2 py-1 text-xs border border-[#00ff9d] rounded-full">Speed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition mt-4">Apply Changes</button>
+            </div>
+            
+            <div class="tab-content hidden" id="shareTab">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-['Orbitron'] mb-3">Share Link</h4>
+                        <div class="flex mb-4">
+                            <input type="text" value="https://gamecraft.ai/play/cosmic-adventure-x29dk" class="cyberpunk-input p-2 rounded-l-lg flex-grow text-sm" readonly>
+                            <button class="bg-[#00ff9d] text-black px-4 rounded-r-lg hover:bg-opacity-80 transition">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                        
+                        <h4 class="font-['Orbitron'] mb-3">Social Media</h4>
+                        <div class="flex space-x-3">
+                            <button class="cyberpunk-button p-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-twitter-x"></i></button>
+                            <button class="cyberpunk-button p-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-facebook"></i></button>
+                            <button class="cyberpunk-button p-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-instagram"></i></button>
+                            <button class="cyberpunk-button p-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition"><i class="bi bi-discord"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-['Orbitron'] mb-3">QR Code</h4>
+                        <div class="bg-white p-4 rounded-lg flex items-center justify-center h-40 mb-3">
+                            <div class="grid grid-cols-5 gap-1">
+                                <!-- Simplified QR code representation -->
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                                <div class="bg-black h-6 w-6"></div>
+                            </div>
+                        </div>
+                        <button class="w-full cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">
+                            <i class="bi bi-download mr-2"></i>Download QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ThreeJS Background
+        let scene, camera, renderer, cubes = [];
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0.1);
+            document.getElementById('threeJsBackground').appendChild(renderer.domElement);
+            
+            // Add grid helper
+            const gridHelper = new THREE.GridHelper(100, 100, 0x00ff9d, 0x004d2e);
+            scene.add(gridHelper);
+            
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0x00ff9d, 0.2);
+            scene.add(ambientLight);
+            
+            // Add directional light
+            const directionalLight = new THREE.DirectionalLight(0x00ff9d, 0.5);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+            
+            // Create floating cubes
+            for (let i = 0; i < 20; i++) {
+                createCube();
+            }
+            
+            camera.position.z = 30;
+            camera.position.y = 10;
+            camera.rotation.x = -0.3;
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        function createCube() {
+            const size = Math.random() * 2 + 0.5;
+            const geometry = new THREE.BoxGeometry(size, size, size);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x00ff9d,
+                transparent: true,
+                opacity: 0.5,
+                wireframe: Math.random() > 0.5
+            });
+            
+            const cube = new THREE.Mesh(geometry, material);
+            
+            cube.position.x = Math.random() * 100 - 50;
+            cube.position.y = Math.random() * 30 - 10;
+            cube.position.z = Math.random() * 50 - 25;
+            
+            cube.userData = {
+                rotationSpeed: {
+                    x: (Math.random() - 0.5) * 0.01,
+                    y: (Math.random() - 0.5) * 0.01,
+                    z: (Math.random() - 0.5) * 0.01
+                },
+                floatSpeed: Math.random() * 0.02 - 0.01
+            };
+            
+            scene.add(cube);
+            cubes.push(cube);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Animate cubes
+            cubes.forEach(cube => {
+                cube.rotation.x += cube.userData.rotationSpeed.x;
+                cube.rotation.y += cube.userData.rotationSpeed.y;
+                cube.rotation.z += cube.userData.rotationSpeed.z;
+                
+                cube.position.y += cube.userData.floatSpeed;
+                
+                // Reset position if cube goes too high or too low
+                if (cube.position.y > 30) {
+                    cube.position.y = -10;
+                } else if (cube.position.y < -10) {
+                    cube.position.y = 30;
+                }
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Initialize ThreeJS
+        initThreeJS();
+        
+        // Modal functionality
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAllModals() {
+            document.querySelectorAll('[id$="Modal"]').forEach(modal => {
+                modal.classList.add('hidden');
+            });
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Event listeners for modals
+        document.getElementById('openLoginBtn').addEventListener('click', () => openModal('loginModal'));
+        document.getElementById('openSignupBtn').addEventListener('click', () => openModal('signupModal'));
+        document.getElementById('mobileLoginBtn').addEventListener('click', () => openModal('loginModal'));
+        document.getElementById('mobileSignupBtn').addEventListener('click', () => openModal('signupModal'));
+        
+        document.getElementById('switchToSignup').addEventListener('click', (e) => {
+            e.preventDefault();
+            closeAllModals();
+            openModal('signupModal');
+        });
+        
+        document.getElementById('switchToLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            closeAllModals();
+            openModal('loginModal');
+        });
+        
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeAllModals);
+        });
+        
+        document.querySelectorAll('.modal').forEach(overlay => {
+            overlay.addEventListener('click', closeAllModals);
+        });
+        
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('tab-active'));
+                // Add active class to clicked tab
+                btn.classList.add('tab-active');
+                
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                // Show selected tab content
+                document.getElementById(btn.dataset.tab + 'Tab').classList.remove('hidden');
+            });
+        });
+        
+        // Mobile menu
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+        
+        // Age group selection
+        document.querySelectorAll('.age-option').forEach(option => {
+            option.addEventListener('click', () => {
+                // Reset all options
+                document.querySelectorAll('.age-option').forEach(opt => {
+                    opt.classList.remove('bg-[#00ff9d]', 'text-black');
+                });
+                // Set selected option
+                option.classList.add('bg-[#00ff9d]', 'text-black');
+            });
+        });
+        
+        // Generate game functionality
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const prompt = document.getElementById('gamePrompt').value;
+            const gameType = document.getElementById('gameType').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const selectedAgeGroup = document.querySelector('input[name="ageGroup"]:checked').value;
+
+            if (!prompt) {
+                alert('Please describe your game idea first!');
+                return;
+            }
+            
+            if (!gameType) {
+                alert('Please select a game type!');
+                return;
+            }
+            
+            if (!difficulty) {
+                alert('Please select a difficulty level!');
+                return;
+            }
+
+            // Simulate game generation with loading animation
+            const previewArea = document.getElementById('gamePreview');
+            previewArea.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full">
+                    <div class="animate-spin text-4xl mb-4"><i class="bi bi-arrow-repeat"></i></div>
+                    <p>Generating your game...</p>
+                    <p class="text-xs mt-2">This might take a few seconds</p>
+                </div>
+            `;
+
+            // Simulate API call delay
+            setTimeout(() => {
+                // Generate a game name based on the prompt
+                const words = prompt.split(' ').filter(word => word.length > 3);
+                let gameName = "Cosmic Adventure";
+                if (words.length >= 2) {
+                    const randomIndex1 = Math.floor(Math.random() * words.length);
+                    let randomIndex2 = Math.floor(Math.random() * words.length);
+                    while (randomIndex2 === randomIndex1 && words.length > 1) {
+                        randomIndex2 = Math.floor(Math.random() * words.length);
+                    }
+                    const word1 = words[randomIndex1].charAt(0).toUpperCase() + words[randomIndex1].slice(1);
+                    const word2 = words[randomIndex2].charAt(0).toUpperCase() + words[randomIndex2].slice(1);
+                    gameName = `${word1} ${word2}`;
+                }
+                
+                // Choose a random color scheme
+                const colors = [
+                    'from-purple-500 to-blue-500',
+                    'from-green-500 to-yellow-500',
+                    'from-red-500 to-orange-500',
+                    'from-blue-500 to-teal-500',
+                    'from-indigo-500 to-purple-500'
+                ];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // Choose a random icon based on game type
+                let icon = 'bi-controller';
+                if (gameType === 'puzzle') icon = 'bi-puzzle';
+                else if (gameType === 'action') icon = 'bi-lightning';
+                else if (gameType === 'adventure') icon = 'bi-map';
+                else if (gameType === 'rpg') icon = 'bi-shield';
+                else if (gameType === 'strategy') icon = 'bi-graph-up';
+                else if (gameType === 'platformer') icon = 'bi-layers';
+                else if (gameType === 'education') icon = 'bi-mortarboard';
+                
+                // Update preview
+                previewArea.innerHTML = `
+                    <div class="flex flex-col h-full">
+                        <div class="h-3/4 bg-gradient-to-r ${randomColor} rounded-t-lg flex items-center justify-center">
+                            <i class="bi ${icon} text-5xl"></i>
+                        </div>
+                        <div class="bg-black p-4 rounded-b-lg flex-grow">
+                            <h4 class="text-xl font-['Orbitron']">${gameName}</h4>
+                            <div class="flex items-center mt-2 mb-4">
+                                <span class="text-xs mr-2">${gameType.charAt(0).toUpperCase() + gameType.slice(1)}</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</span>
+                                <span class="text-xs mr-2">•</span>
+                                <span class="text-xs">Ages ${selectedAgeGroup}</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="playGameBtn" class="flex-1 cyberpunk-button px-3 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">
+                                    <i class="bi bi-play-fill mr-1"></i>Play
+                                </button>
+                                <button class="cyberpunk-button px-3 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="cyberpunk-button px-3 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">
+                                    <i class="bi bi-share-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener to play button
+                document.getElementById('playGameBtn').addEventListener('click', () => {
+                    openGamePlayModal(gameName, gameType);
+                });
+            }, 3000);
+        });
+        
+        // Open game play modal
+        function openGamePlayModal(gameName, gameType) {
+            document.getElementById('modalGameTitle').textContent = gameName;
+            openModal('gamePlayModal');
+            
+            // Simulate game loading
+            setTimeout(() => {
+                document.getElementById('gameLoading').classList.add('hidden');
+                
+                // Create a simple game based on the type
+                if (gameType === 'puzzle') {
+                    createPuzzleGame();
+                } else {
+                    createSimpleGame();
+                }
+            }, 2000);
+        }
+        
+        // Create a simple demo puzzle game
+        function createPuzzleGame() {
+            const gameCanvas = document.getElementById('gameCanvas');
+            gameCanvas.innerHTML = `
+                <div class="w-full h-full p-4 flex flex-col">
+                    <div class="mb-4 text-center">
+                        <p>Arrange the tiles in numerical order!</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mx-auto">
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">1</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">2</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">3</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">4</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">5</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">6</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">7</div>
+                        <div class="puzzle-tile w-20 h-20 bg-[#00ff9d] text-black flex items-center justify-center text-2xl font-bold cursor-pointer">8</div>
+                        <div class="empty-tile w-20 h-20 border-2 border-dashed border-[#00ff9d]"></div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p>Click a tile to move it.</p>
+                        <p id="moveCounter" class="mt-2">Moves: 0</p>
+                    </div>
+                </div>
+            `;
+            
+            // Randomize puzzle tiles
+            const tiles = Array.from(document.querySelectorAll('.puzzle-tile'));
+            shuffleArray(tiles);
+            
+            const gridContainer = document.querySelector('.grid');
+            gridContainer.innerHTML = '';
+            
+            // Place shuffled tiles and empty tile
+            tiles.forEach(tile => {
+                gridContainer.appendChild(tile);
+            });
+            
+            // Add empty tile at the end
+            const emptyTile = document.createElement('div');
+            emptyTile.className = 'empty-tile w-20 h-20 border-2 border-dashed border-[#00ff9d]';
+            gridContainer.appendChild(emptyTile);
+            
+            // Add click event to tiles
+            let moveCount = 0;
+            document.querySelectorAll('.puzzle-tile').forEach(tile => {
+                tile.addEventListener('click', () => {
+                    const tileIndex = Array.from(gridContainer.children).indexOf(tile);
+                    const emptyIndex = Array.from(gridContainer.children).indexOf(document.querySelector('.empty-tile'));
+                    
+                    // Check if tile is adjacent to empty space
+                    if (isAdjacent(tileIndex, emptyIndex, 3)) {
+                        // Swap positions
+                        swapElements(tile, document.querySelector('.empty-tile'));
+                        moveCount++;
+                        document.getElementById('moveCounter').textContent = `Moves: ${moveCount}`;
+                    }
+                });
+            });
+        }
+        
+        // Create a simple demo game
+        function createSimpleGame() {
+            const gameCanvas = document.getElementById('gameCanvas');
+            gameCanvas.innerHTML = `
+                <div class="w-full h-full relative bg-gradient-to-b from-black to-blue-900 overflow-hidden">
+                    <div id="player" class="absolute w-10 h-10 bg-[#00ff9d] rounded-full left-1/2 bottom-10 transform -translate-x-1/2"></div>
+                    <div id="score" class="absolute top-4 right-4 text-lg">Score: 0</div>
+                    <div id="gameMessage" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 p-4 rounded hidden">
+                        <p class="text-xl text-center">Use arrow keys or swipe to move!</p>
+                    </div>
+                </div>
+            `;
+            
+            let score = 0;
+            const player = document.getElementById('player');
+            const gameArea = gameCanvas.querySelector('div');
+            let playerX = gameCanvas.offsetWidth / 2 - 20;
+            let playerY = gameCanvas.offsetHeight - 60;
+            
+            // Show game instructions briefly
+            document.getElementById('gameMessage').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('gameMessage').classList.add('hidden');
+                startGameLoop();
+            }, 2000);
+            
+            function startGameLoop() {
+                // Spawn objects periodically
+                const gameInterval = setInterval(() => {
+                    spawnObject();
+                }, 1000);
+                
+                // Clean up on modal close
+                document.querySelector('.close-modal').addEventListener('click', () => {
+                    clearInterval(gameInterval);
+                });
+            }
+            
+            function spawnObject() {
+                const object = document.createElement('div');
+                const isCollectible = Math.random() > 0.3;
+                
+                object.className = `absolute w-6 h-6 rounded-full ${isCollectible ? 'bg-yellow-400' : 'bg-red-500'}`;
+                object.style.left = `${Math.random() * (gameCanvas.offsetWidth - 30)}px`;
+                object.style.top = '0';
+                
+                if (isCollectible) {
+                    object.dataset.type = 'collectible';
+                } else {
+                    object.dataset.type = 'obstacle';
+                }
+                
+                gameArea.appendChild(object);
+                
+                // Animate falling
+                const fallAnimation = object.animate(
+                    [
+                        { top: '0' },
+                        { top: `${gameCanvas.offsetHeight}px` }
+                    ],
+                    {
+                        duration: 3000,
+                        easing: 'linear',
+                        iterations: 1
+                    }
+                );
+                
+                fallAnimation.onfinish = () => {
+                    object.remove();
+                };
+                
+                // Check for collisions
+                const collisionCheck = setInterval(() => {
+                    const playerRect = player.getBoundingClientRect();
+                    const objectRect = object.getBoundingClientRect();
+                    
+                    if (
+                        playerRect.left < objectRect.right &&
+                        playerRect.right > objectRect.left &&
+                        playerRect.top < objectRect.bottom &&
+                        playerRect.bottom > objectRect.top
+                    ) {
+                        // Collision detected
+                        if (object.dataset.type === 'collectible') {
+                            score += 10;
+                            object.remove();
+                            document.getElementById('score').textContent = `Score: ${score}`;
+                        } else {
+                            // Game over for obstacle
+                            fallAnimation.cancel();
+                            object.remove();
+                            gameOver();
+                        }
+                        clearInterval(collisionCheck);
+                    }
+                }, 100);
+                
+                // Clean up interval if object is removed
+                fallAnimation.onfinish = () => {
+                    object.remove();
+                    clearInterval(collisionCheck);
+                };
+            }
+            
+            function gameOver() {
+                const gameOverMessage = document.createElement('div');
+                gameOverMessage.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 p-6 rounded text-center';
+                gameOverMessage.innerHTML = `
+                    <p class="text-2xl mb-3">Game Over!</p>
+                    <p class="mb-4">Final Score: ${score}</p>
+                    <button class="cyberpunk-button px-4 py-2 border border-[#00ff9d] hover:bg-[#00ff9d] hover:text-black transition">Play Again</button>
+                `;
+                gameArea.appendChild(gameOverMessage);
+                
+                gameOverMessage.querySelector('button').addEventListener('click', () => {
+                    score = 0;
+                    document.getElementById('score').textContent = 'Score: 0';
+                    gameOverMessage.remove();
+                    startGameLoop();
+                });
+            }
+            
+            // Set up controls - keyboard
+            document.addEventListener('keydown', (e) => {
+                switch (e.key) {
+                    case 'ArrowLeft':
+                        playerX = Math.max(0, playerX - 20);
+                        break;
+                    case 'ArrowRight':
+                        playerX = Math.min(gameCanvas.offsetWidth - 40, playerX + 20);
+                        break;
+                }
+                
+                player.style.left = `${playerX}px`;
+            });
+            
+            // Set up controls - touch for mobile
+            let touchStartX = 0;
+            
+            gameArea.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+            });
+            
+            gameArea.addEventListener('touchmove', (e) => {
+                e.preventDefault(); // Prevent scrolling
+                const touchX = e.touches[0].clientX;
+                const diff = touchX - touchStartX;
+                
+                if (Math.abs(diff) > 10) {
+                    playerX = Math.min(Math.max(0, playerX + diff), gameCanvas.offsetWidth - 40);
+                    player.style.left = `${playerX}px`;
+                    touchStartX = touchX;
+                }
+            });
+        }
+        
+        // Helper functions
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function isAdjacent(index1, index2, gridSize) {
+            // Check if two indices are adjacent in a grid
+            const row1 = Math.floor(index1 / gridSize);
+            const col1 = index1 % gridSize;
+            const row2 = Math.floor(index2 / gridSize);
+            const col2 = index2 % gridSize;
+            
+            return (
+                (Math.abs(row1 - row2) === 1 && col1 === col2) || 
+                (Math.abs(col1 - col2) === 1 && row1 === row2)
+            );
+        }
+        
+        function swapElements(elem1, elem2) {
+            const parent = elem1.parentNode;
+            const nextSibling = elem1.nextSibling === elem2 ? elem1 : elem1.nextSibling;
+            
+            elem2.parentNode.insertBefore(elem1, elem2);
+            parent.insertBefore(elem2, nextSibling);
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
